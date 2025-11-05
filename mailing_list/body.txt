@@ -1,0 +1,7 @@
+Hi {name} 👋,
+
+This is a test email sent automatically using Python.
+If you received this, our proof-of-concept works!
+
+Best,
+Tunmbi
