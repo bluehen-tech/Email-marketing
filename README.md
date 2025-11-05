@@ -55,9 +55,9 @@ _No third-party packages needed – only Python’s standard library._
 Example **emails.csv**:
 ```csv
 name,email
-Julie Nguyen,julng@udel.edu
-Ekaterina Bergwell,ebergwal@udel.edu
-Tejas Pawar,tejasp@udel.edu
+Tony Stark,starkt@uddssa.com
+Frodo Bargains,barfrodo@uddssa.com
+Tom Riddle,riddlet@uddssa.com
 ````
 
 Example **subject.txt**:
@@ -75,7 +75,7 @@ This is a test email sent automatically using Python.
 If you received this, our proof of concept works perfectly 🚀
 
 Warm regards,
-Tunmbi
+Samwise
 ```
 
 ### 2 Run the script
@@ -120,7 +120,7 @@ We’re glad to have you on board.
 ➡ becomes
 
 ```
-Hi Leke,
+Hi Gandalf,
 ```
 
 ---
