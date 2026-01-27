@@ -1,152 +1,232 @@
-# Email Mass Sender – Proof of Concept
+# UD-DSSA Email Mailing Service (PoC)
 
-A lightweight, cross-platform Python script for sending personalized emails to multiple recipients using Gmail’s SMTP service.  
-This project demonstrates a simple, flexible architecture for small-scale marketing, notifications, or newsletter systems.
+A lightweight, service-mode Python mailing tool for sending **personalized bulk emails** via **Resend**, with optional **AI-assisted drafting or polishing** using **OpenAI** or **DeepSeek**.
+
+This project is designed as a **proof-of-concept (PoC)** for student organizations (e.g. UD-DSSA) to manage announcements, events, and opportunities safely—without Gmail SMTP or storing user credentials.
+
+---
+
+## Key Features
+
+- 📧 Transactional email delivery via **Resend**
+- 🧠 Optional AI support:
+  - `ai_draft`: generate subject + body from a short intake
+  - `ai_polish`: improve existing drafts
+  - `manual`: send content as-is
+- 👤 Per-recipient personalization using `{name}`
+- 🔐 Optional **one-time passcode (OTP)** safety gate
+- 👀 Mandatory **preview + explicit SEND confirmation**
+- ⚙️ Pure Python (standard library + `requests`)
+- 🧪 Service-mode only (no DIY SMTP, no Gmail passwords)
 
 ---
 
 ## Project Structure
 
+
+
 ```
 
 marketing_email/
 │
-├── send_mail_poc.py        # Main Python script
+├── uddssa_mailer.py # Main mailing service script
+├── .env # Environment variables (DO NOT COMMIT)
+├── otp.txt # (Optional) one-time passcode gate
 │
-├── app_pw.txt              # (Optional) stores Gmail App Password securely
-│
-└── mailing_list/           # Email content and recipient data
-├── emails.csv          # Recipient list (name,email)
-├── subject.txt         # Email subject line
-└── body.txt            # Email body text (supports {name} placeholder)
+└── mailing_list/
+├── emails.csv # Recipient list
+├── subject.txt # Email subject (manual / polish modes)
+└── body.txt # Email body (supports {name})
 
 ````
 
 ---
+
 
 ## Requirements
 
-- Python **3.8+**
-- Gmail account with **2-Step Verification** enabled
-- A **16-character App Password** generated at  
-  [https://myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords)
-- Internet access (for SMTP)
+- Python **3.9+**
+- Internet access
+- A **Resend** account and API key
+- *(Optional)* An **OpenAI** or **DeepSeek** API key for AI modes
 
-_No third-party packages needed – only Python’s standard library._
+Python dependency:
+```bash
+pip install requests
 
----
 
-## How It Works
+## Environment Setup
 
-1. **Prompts for user credentials**  
-   You enter your Gmail address and App Password (never stored).
-2. **Reads message content**  
-   From `emails.csv`, `subject.txt`, and `body.txt`.
-3. **Builds and sends personalized emails**  
-   Each recipient gets an individual email using `{name}` substitution.
-4. **Includes 1-second delay**  
-   To lower spam-flag risk.
+Create a .env file in marketing_email/:
 
----
+# Required (email sending)
+RESEND_API_KEY=your_resend_api_key
+RESEND_FROM=DSSA <no-reply@bluehen-dssa.org>
+
+# Optional (AI features)
+AI_PROVIDER=openai          # or deepseek
+OPENAI_API_KEY=sk-...
+DEEPSEEK_API_KEY=...
+
+# Optional overrides
+# AI_PROVIDER defaults to "openai"
+
+⚠️ Never commit .env or API keys to version control.
+
+## Recipient List Format
+
+mailing_list/emails.csv must contain an email column.
+Name is optional but recommended.
+
+name,email
+Tony Stark,starkt@uddssa.com
+Frodo Baggins,frodo@uddssa.com
+,anonymous@uddssa.com
+
+## Content Files (Manual / Polish Modes)
+subject.txt
+DataQuest × FinTech Hub 591 Collaboration
+
+body.txt
+Hi {name},
+
+We’re excited to invite you to a collaborative session with DataQuest at FinTech Hub 591.
+
+📅 Date: 26 January 2026  
+🕒 Time: 3:00 PM  
+
+Pizza and beverages will be provided.
+
+Best,  
+UD-DSSA
 
 ## Usage
 
-### 1 Prepare your files
-Example **emails.csv**:
-```csv
-name,email
-Tony Stark,starkt@uddssa.com
-Frodo Bargains,barfrodo@uddssa.com
-Tom Riddle,riddlet@uddssa.com
-````
+Run from the project root:
 
-Example **subject.txt**:
+python marketing_email/uddssa_mailer.py
 
-```
-✨ Welcome to the DSSA Newsletter
-```
+## Content Modes
 
-Example **body.txt**:
+### 1. Manual (no AI)
+python marketing_email/uddssa_mailer.py --content-mode manual
 
-```
-Hey {name} 👋,
 
-This is a test email sent automatically using Python.
-If you received this, our proof of concept works perfectly 🚀
+Uses subject.txt and body.txt exactly as written.
 
-Warm regards,
-Samwise
-```
+### 2. AI Polish (default)
+python marketing_email/uddssa_mailer.py --content-mode ai_polish
 
-### 2 Run the script
 
-```bash
-python send_mail_poc.py
-```
+Optional tone:
 
-### 3 Follow prompts
+--tone formal
+--tone casual
+--tone friendly-professional
 
-```
-Email Mass Sender - Proof of Concept
-Enter your email address: your_email@gmail.com
-Enter your 16-character App Password:
-```
+### 3. AI Draft (guided intake)
+python marketing_email/uddssa_mailer.py --content-mode ai_draft --tone formal
 
-Each recipient will then receive a personalized copy.
 
----
+You’ll be prompted for:
 
-## Security Notes
+event type
 
-* **Never** use your regular Gmail password.
-  Always use the 16-character **App Password** generated by Google.
-* The script **does not** store credentials.
-* If you use `app_pw.txt`, make sure it’s **excluded from any public repo**.
+audience
 
----
+topic
+
+date / time / location
+
+call-to-action
+
+The AI returns JSON-validated subject and body.
+
+## Safety & Controls
+Preview + Confirmation
+
+Before sending:
+
+A full preview is shown
+
+You must type SEND to proceed
+
+Anything else cancels the run.
+
+## Optional OTP Gate
+
+If otp.txt exists in the project directory:
+
+You’ll be prompted for a one-time code
+
+The file is deleted after successful entry
+
+Useful for shared machines or officer handoffs.
 
 ## Personalization
 
-Use `{name}` inside `body.txt` to dynamically insert each recipient’s name.
+Use {name} anywhere in body.txt.
 
 Example:
 
-```
 Hi {name},
 
-We’re glad to have you on board.
-```
 
-➡ becomes
+Becomes:
 
-```
 Hi Gandalf,
-```
 
----
 
-## 🚫 Common Errors
+If {name} is missing, the script automatically prepends:
 
-| Error                                      | Cause                              | Fix                             |
-| ------------------------------------------ | ---------------------------------- | ------------------------------- |
-| `No recipients found in the mailing list!` | Header has a space (`name, email`) | Use `name,email` exactly        |
-| `SMTPAuthenticationError`                  | Wrong or spaced App Password       | Remove spaces and re-enter      |
-| `Missing required file:`                   | A file is missing or misnamed      | Check the `mailing_list` folder |
+Hi {name},
 
----
+## Common Errors
 
-## 💡 Future Enhancements
+| Error               | Cause                     | Fix                   |
+|--------------------|---------------------------|-----------------------|
+| Missing RESEND_API_KEY | `.env` not loaded          | Add key to `.env`     |
+| No recipients found | Bad CSV headers            | Use `name,email`     |
+| AI JSON parse error | Model returned non-JSON    | Retry / change model |
+| 429 quota error     | AI billing not enabled     | Use manual mode      |
 
-* AI-assisted drafting (OpenAI/Gemini integration)
-* HTML formatting and attachments
-* Auto DKIM/SPF validation
-* Packaging as `.exe` or `.app` for one-click use
 
----
+## AI output is forced to valid JSON
+
+Hard rules ensure:
+
+non-spammy subject
+
+professional tone
+
+{name} greeting
+
+AI usage is optional — mailing works without it
+
+## Intended Scope (PoC)
+
+This project is not a full marketing platform. It intentionally avoids:
+
+HTML templates
+
+tracking pixels
+
+analytics
+
+background queues
+
+It is designed for:
+
+student organizations
+
+controlled mailing lists
+
+officer-run announcements
 
 ## Author
 
-**Tunmbi Okediran**
-Financial Services Analytics, University of Delaware
-*DSSA Mailing System Prototype*
-📧 [otunmbi@udel.edu](mailto:otunmbi@udel.edu)
+Tunmbi Okediran
+PhD Student, Financial Services Analytics
+University of Delaware
+
+UD-DSSA Mailing Service – Proof of Concept
