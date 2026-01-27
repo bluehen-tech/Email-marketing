@@ -1,2 +1,4 @@
 app_pw.txt
 .env
+full_email_list.csv
+emails.csv
