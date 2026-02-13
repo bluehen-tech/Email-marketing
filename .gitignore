@@ -1,4 +1,4 @@
 app_pw.txt
 .env
-full_email_list.csv
-emails.csv
+mailing_list/full_email_list.csv
+mailing_list/emails.csv
